@@ -46,7 +46,7 @@ interface Period {
   /** число, значение для периода */
   value: number;
   /** является ли элемент текущим */
-  active: boolean;
+  active?: boolean;
 }
 
 /** Статистика, алиас шаблона `chart` */
