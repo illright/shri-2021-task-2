@@ -269,7 +269,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
       commitSizesThisSprint.countInCommit(commit, summaries);
 
       const commitDate = new Date(commit.timestamp);
-      commitTimeGridThisSprint[commitDate.getUTCDay()][commitDate.getUTCHours()]++;
+      commitTimeGridThisSprint[commitDate.getDay()][commitDate.getHours()]++;
     }
 
     if (withinSprint(commit.timestamp, lastSprint)) {
