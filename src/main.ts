@@ -189,7 +189,6 @@ function buildDiagramSlide(
   const categories = [
     ['> 1001 строки', 'moreThan1000'],
     ['501 — 1000 строк', 'upTo1000'],
-    ['501 — 1000 строк', 'upTo1000'],
     ['101 — 500 строк', 'upTo500'],
     ['1 — 100 строк', 'upTo100'],
   ];
