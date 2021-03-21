@@ -1,7 +1,16 @@
 import binarySearch from 'binary-search';
 import Heap from 'heap-js';
 import { pluralize, entityPluralizations } from './pluralization';
-import type { Slide, Period, VoteSlide, LeadersSlide, ChartSlide, DiagramSlide } from './task1';
+import type {
+  Activity,
+  ActivitySlide,
+  ChartSlide,
+  DiagramSlide,
+  LeadersSlide,
+  Period,
+  Slide,
+  VoteSlide,
+} from './task1';
 import type {
   Comment,
   Commit,
@@ -21,6 +30,10 @@ enum RelativePosition {
   Earlier = -1,
   Within = 0,
   Later = 1,
+}
+
+function bySprintStartTime(a: Sprint, b: Sprint) {
+  return a.startAt - b.startAt;
 }
 
 function relativeToSprint(sprint: Sprint, timestamp: number) {
@@ -196,10 +209,27 @@ function buildDiagramSlide(
   };
 }
 
+function buildActivitySlide(sprintID: number, commitTimeGrid: Activity[]): ActivitySlide {
+  return {
+    alias: 'activity',
+    data: {
+      title: 'Коммиты, 1 неделя',
+      subtitle: `Спринт № ${sprintID}`,
+      data: {
+        mon: commitTimeGrid[1],
+        tue: commitTimeGrid[2],
+        wed: commitTimeGrid[3],
+        thu: commitTimeGrid[4],
+        fri: commitTimeGrid[5],
+        sat: commitTimeGrid[6],
+        sun: commitTimeGrid[0],
+      }
+    }
+  }
+}
+
 export function prepareData(entities: Entity[], { sprintId }: { sprintId: number }): Slide[] {
   const users = new Map<UserId, User>();
-  const projects: Project[] = [];
-  const issues: Issue[] = [];
   const comments: Comment[] = [];
   const commits: Commit[] = [];
   const summaries = new Map<SummaryId, Summary>();
@@ -211,17 +241,13 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   for (const entity of entities) {
     if (entity.type === 'User') {
       users.set(entity.id, entity);
-    } else if (entity.type === 'Project') {
-      projects.push(entity);
-    } else if (entity.type === 'Issue') {
-      issues.push(entity);
     } else if (entity.type === 'Comment') {
       comments.push(entity);
     } else if (entity.type === 'Commit') {
       commits.push(entity);
     } else if (entity.type === 'Summary') {
       summaries.set(entity.id, entity);
-    } else {
+    } else if (entity.type === 'Sprint') {
       if (entity.id === sprintId) {
         currentSprint = entity;
       }
@@ -232,7 +258,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     }
   }
 
-  sprints.sort((a, b) => a.startAt - b.startAt);
+  sprints.sort(bySprintStartTime);
 
   const likesThisSprint = new Map<UserId, number>();
   for (const comment of comments) {
@@ -257,6 +283,9 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     upTo1000: 0,
     moreThan1000: 0,
   };
+  const commitTimeGridThisSprint = new Array(7).map(
+    () => new Array<number>(24).fill(0) as Activity
+  );
   for (const commit of commits) {
     if (withinSprint(commit.timestamp, currentSprint)) {
       const authorId = getUserID(commit.author);
@@ -264,6 +293,9 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
 
       const commitSize = computeCommitSize(commit, summaries);
       incrementSizeCounter(commitSize, commitSizesThisSprint);
+
+      const commitDate = new Date(commit.timestamp);
+      commitTimeGridThisSprint[commitDate.getUTCDay()][commitDate.getUTCHours()]++;
     }
 
     if (withinSprint(commit.timestamp, lastSprint)) {
@@ -301,6 +333,10 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
       sprintId,
       commitSizesThisSprint,
       commitSizesLastSprint,
+    ),
+    buildActivitySlide(
+      sprintId,
+      commitTimeGridThisSprint,
     ),
   ];
 }
