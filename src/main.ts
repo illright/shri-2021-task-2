@@ -1,4 +1,5 @@
 import binarySearch from 'binary-search';
+import Heap from 'heap-js';
 import { pluralize, entityPluralizations } from './pluralization';
 import type { Slide, Period, VoteSlide, LeadersSlide, ChartSlide } from './task1';
 import type {
@@ -137,6 +138,8 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     }
   };
 
+  const commitsHeap = new Heap((a: [number, number], b: [number, number]) => a[1] - b[1]);
+  commitsHeap.push(...commitsThisSprint.entries());
   const chartSlide: ChartSlide = {
     alias: 'chart',
     data: {
@@ -149,8 +152,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
         }
         return period;
       }),
-      users: [...commitsThisSprint.entries()].map(([id, commitCount]) => {
-        // TODO: leave 3 best entries
+      users: commitsHeap.top(3).map(([id, commitCount]) => {
         const user = users.get(id);
         return {
           id,

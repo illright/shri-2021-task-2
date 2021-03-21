@@ -19,6 +19,7 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "binary-search": "^1.3.6"
+    "binary-search": "^1.3.6",
+    "heap-js": "^2.1.4"
   }
 }
