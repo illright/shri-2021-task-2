@@ -6,6 +6,10 @@ export function bySprintStartTime(a: Sprint, b: Sprint) {
   return a.startAt - b.startAt;
 }
 
+export function byMapKeyAsc(a: [number, number], b: [number, number]) {
+  return a[0] - b[0];
+}
+
 export function byMapValueDesc(a: [number, number], b: [number, number]) {
   return b[1] - a[1];
 }

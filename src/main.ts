@@ -1,6 +1,7 @@
 import binarySearch from 'binary-search';
 import { pluralize, entityPluralizations } from './pluralization';
 import {
+  byMapKeyAsc,
   byMapValueDesc,
   bySprintStartTime,
   relativeToSprint,
@@ -35,35 +36,52 @@ function withinSprint(timestamp: number, sprint: Sprint) {
   return relativeToSprint(sprint, timestamp) === RelativePosition.Within;
 }
 
-function getUserID(userOrID: User | UserId) {
-  return typeof userOrID === 'number' ? userOrID : userOrID.id;
+function isEntity<T extends Entity>(arg: T | T['id']): arg is T {
+  return typeof arg === 'object' && 'id' in arg && 'type' in arg;
 }
 
-interface CommitSizes {
+function getID<T extends Entity>(entityOrID: T | T['id']): T['id'] {
+  return isEntity(entityOrID) ? entityOrID.id : entityOrID;
+}
+
+class CommitSizes {
   upTo100: number;
   upTo500: number;
   upTo1000: number;
   moreThan1000: number;
-}
 
-function computeCommitSize(commit: Commit, summaries: Map<SummaryId, Summary>) {
-  let result = 0;
-  for (const summaryOrId of commit.summaries) {
-    const summary = typeof summaryOrId === 'number' ? summaries.get(summaryOrId) : summaryOrId;
-    result += summary.added + summary.removed;
+  constructor() {
+    this.upTo100 = 0;
+    this.upTo500 = 0;
+    this.upTo1000 = 0;
+    this.moreThan1000 = 0;
   }
-  return result;
-}
 
-function incrementSizeCounter(commitSize: number, counters: CommitSizes) {
-  if (commitSize <= 100) {
-    counters.upTo100++;
-  } else if (commitSize <= 500) {
-    counters.upTo500++;
-  } else if (commitSize <= 1000) {
-    counters.upTo1000++;
-  } else {
-    counters.moreThan1000++;
+  countInCommit(commit: Commit, summaries: Map<SummaryId, Summary>) {
+    let commitSize = 0;
+    for (const summaryOrID of commit.summaries) {
+      const summary = summaries.get(getID<Summary>(summaryOrID));
+      commitSize += summary.added + summary.removed;
+    }
+
+    if (commitSize <= 100) {
+      this.upTo100++;
+    } else if (commitSize <= 500) {
+      this.upTo500++;
+    } else if (commitSize <= 1000) {
+      this.upTo1000++;
+    } else {
+      this.moreThan1000++;
+    }
+  }
+
+  getTotal() {
+    return (
+      this.upTo100
+      + this.upTo500
+      + this.upTo1000
+      + this.moreThan1000
+    );
   }
 }
 
@@ -114,17 +132,19 @@ function buildChartSlide(
   commitLeaderboard: ChartData['users'],
   sprintsByID: Map<SprintId, Sprint>,
 ): ChartSlide {
+  const sprintsOrdered = [...commitsPerSprint.entries()];
+  sprintsOrdered.sort(byMapKeyAsc);
   return {
     alias: 'chart',
     data: {
       title: 'Коммиты',
       subtitle: sprint.name,
-      values: [...commitsPerSprint.entries()].map(([id, commitCount]) => {
-        const sprint = sprintsByID.get(id);
+      values: sprintsOrdered.map(([id, commitCount]) => {
+        const thatSprint = sprintsByID.get(id);
         const period: Period = {
           title: id.toString(),
           value: commitCount,
-          hint: sprint.name,
+          hint: thatSprint.name,
         };
         if (id === sprint.id) {
           period.active = true;
@@ -141,18 +161,8 @@ function buildDiagramSlide(
   commitSizesThisSprint: CommitSizes,
   commitSizesLastSprint: CommitSizes,
 ): DiagramSlide {
-  const totalCommitsThisSprint = (
-    commitSizesThisSprint.upTo100
-    + commitSizesThisSprint.upTo500
-    + commitSizesThisSprint.upTo1000
-    + commitSizesThisSprint.moreThan1000
-  );
-  const totalCommitsLastSprint = (
-    commitSizesLastSprint.upTo100
-    + commitSizesLastSprint.upTo500
-    + commitSizesLastSprint.upTo1000
-    + commitSizesLastSprint.moreThan1000
-  );
+  const totalCommitsThisSprint = commitSizesThisSprint.getTotal();
+  const totalCommitsLastSprint = commitSizesLastSprint.getTotal();
   const totalDifference = totalCommitsThisSprint - totalCommitsLastSprint;
   const forceSign = true;
   const categories = [
@@ -241,43 +251,30 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   for (const comment of comments) {
     if (withinSprint(comment.createdAt, currentSprint)) {
       const likeCount = comment.likes.length;
-      const authorId = getUserID(comment.author);
-      likesThisSprint.set(authorId, (likesThisSprint.get(authorId) ?? 0) + likeCount);
+      const authorID = getID<User>(comment.author);
+      likesThisSprint.set(authorID, (likesThisSprint.get(authorID) ?? 0) + likeCount);
     }
   }
 
   const commitsPerUserThisSprint = new Map<UserId, number>();
   const commitsPerSprint = new Map<SprintId, number>();
-  const commitSizesThisSprint: CommitSizes = {
-    upTo100: 0,
-    upTo500: 0,
-    upTo1000: 0,
-    moreThan1000: 0,
-  };
-  const commitSizesLastSprint: CommitSizes = {
-    upTo100: 0,
-    upTo500: 0,
-    upTo1000: 0,
-    moreThan1000: 0,
-  };
+  const commitSizesThisSprint = new CommitSizes();
+  const commitSizesLastSprint = new CommitSizes();
   const commitTimeGridThisSprint = (new Array(7)).fill(null).map(
     () => (new Array<number>(24)).fill(0) as Activity
   );
   for (const commit of commits) {
     if (withinSprint(commit.timestamp, currentSprint)) {
-      const authorId = getUserID(commit.author);
+      const authorId = getID<User>(commit.author);
       commitsPerUserThisSprint.set(authorId, (commitsPerUserThisSprint.get(authorId) ?? 0) + 1);
-
-      const commitSize = computeCommitSize(commit, summaries);
-      incrementSizeCounter(commitSize, commitSizesThisSprint);
+      commitSizesThisSprint.countInCommit(commit, summaries);
 
       const commitDate = new Date(commit.timestamp);
       commitTimeGridThisSprint[commitDate.getUTCDay()][commitDate.getUTCHours()]++;
     }
 
     if (withinSprint(commit.timestamp, lastSprint)) {
-      const commitSize = computeCommitSize(commit, summaries);
-      incrementSizeCounter(commitSize, commitSizesLastSprint);
+      commitSizesLastSprint.countInCommit(commit, summaries);
     }
 
     const sprintIndex = binarySearch(sprints, commit.timestamp, relativeToSprint);
