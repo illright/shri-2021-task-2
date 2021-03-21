@@ -283,8 +283,8 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     upTo1000: 0,
     moreThan1000: 0,
   };
-  const commitTimeGridThisSprint = new Array(7).map(
-    () => new Array<number>(24).fill(0) as Activity
+  const commitTimeGridThisSprint = (new Array(7)).fill(null).map(
+    () => (new Array<number>(24)).fill(0) as Activity
   );
   for (const commit of commits) {
     if (withinSprint(commit.timestamp, currentSprint)) {
