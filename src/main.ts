@@ -1,5 +1,11 @@
 import binarySearch from 'binary-search';
 import { pluralize, entityPluralizations } from './pluralization';
+import {
+  byMapValueDesc,
+  bySprintStartTime,
+  relativeToSprint,
+  RelativePosition,
+} from './comparators';
 import type {
   Activity,
   ActivitySlide,
@@ -24,26 +30,6 @@ import type {
   UserId,
 } from './entities';
 
-
-enum RelativePosition {
-  Earlier = -1,
-  Within = 0,
-  Later = 1,
-}
-
-function bySprintStartTime(a: Sprint, b: Sprint) {
-  return a.startAt - b.startAt;
-}
-
-function relativeToSprint(sprint: Sprint, timestamp: number) {
-  if (timestamp < sprint.startAt) {
-    return RelativePosition.Earlier;
-  }
-  if (timestamp >= sprint.finishAt) {
-    return RelativePosition.Later;
-  }
-  return RelativePosition.Within;
-}
 
 function withinSprint(timestamp: number, sprint: Sprint) {
   return relativeToSprint(sprint, timestamp) === RelativePosition.Within;
@@ -86,13 +72,15 @@ function buildVoteSlide(
   likesThisSprint: Map<UserId, number>,
   users: Map<UserId, User>,
 ): VoteSlide {
+  const usersRankedByLikes = [...likesThisSprint.entries()];
+  usersRankedByLikes.sort(byMapValueDesc);
   return {
     alias: 'vote',
     data: {
       title: 'Самый 🔎 внимательный разработчик',
       subtitle: sprint.name,
       emoji: '🔎',
-      users: [...likesThisSprint.entries()].map(([id, likeCount]) => {
+      users: usersRankedByLikes.map(([id, likeCount]) => {
         const user = users.get(id);
         return {
           id,
@@ -216,15 +204,15 @@ function buildActivitySlide(
 }
 
 export function prepareData(entities: Entity[], { sprintId }: { sprintId: number }): Slide[] {
+  let currentSprint: Sprint;
+  let lastSprint: Sprint;
+
   const users = new Map<UserId, User>();
   const comments: Comment[] = [];
   const commits: Commit[] = [];
   const summaries = new Map<SummaryId, Summary>();
   const sprints: Sprint[] = [];
   const sprintsByID = new Map<SprintId, Sprint>();
-
-  let currentSprint: Sprint;
-  let lastSprint: Sprint;
 
   for (const entity of entities) {
     if (entity.type === 'User') {
@@ -302,8 +290,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   }
 
   const usersRankedByCommits = [...commitsPerUserThisSprint.entries()];
-  usersRankedByCommits.sort((a, b) => b[1] - a[1]);
-  console.log(usersRankedByCommits);
+  usersRankedByCommits.sort(byMapValueDesc);
   const commitLeaderboard = usersRankedByCommits.map(([id, commitCount]) => {
     const user = users.get(id);
     return {
