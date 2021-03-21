@@ -1,11 +1,12 @@
 import binarySearch from 'binary-search';
-import Heap from 'heap-js';
 import { pluralize, entityPluralizations } from './pluralization';
 import type {
   Activity,
   ActivitySlide,
+  ChartData,
   ChartSlide,
   DiagramSlide,
+  LeadersData,
   LeadersSlide,
   Period,
   Slide,
@@ -106,8 +107,7 @@ function buildVoteSlide(
 
 function buildLeadersSlide(
   sprint: Sprint,
-  commitsPerUserThisSprint: Map<UserId, number>,
-  users: Map<UserId, User>,
+  commitLeaderboard: LeadersData['users'],
 ): LeadersSlide {
   return {
     alias: 'leaders',
@@ -115,15 +115,7 @@ function buildLeadersSlide(
       title: 'Больше всего коммитов',
       subtitle: sprint.name,
       emoji: '👑',
-      users: [...commitsPerUserThisSprint.entries()].map(([id, commitCount]) => {
-        const user = users.get(id);
-        return {
-          id,
-          name: user.name,
-          avatar: user.avatar,
-          valueText: commitCount.toString(),
-        }
-      }),
+      users: commitLeaderboard,
     }
   };
 }
@@ -131,12 +123,9 @@ function buildLeadersSlide(
 function buildChartSlide(
   sprint: Sprint,
   commitsPerSprint: Map<SprintId, number>,
-  commitsPerUserThisSprint: Map<UserId, number>,
-  users: Map<UserId, User>,
+  commitLeaderboard: ChartData['users'],
   sprintsByID: Map<SprintId, Sprint>,
 ): ChartSlide {
-  const commitsHeap = new Heap((a: [number, number], b: [number, number]) => a[1] - b[1]);
-  commitsHeap.push(...commitsPerUserThisSprint.entries());
   return {
     alias: 'chart',
     data: {
@@ -154,15 +143,7 @@ function buildChartSlide(
         }
         return period;
       }),
-      users: commitsHeap.top(3).map(([id, commitCount]) => {
-        const user = users.get(id);
-        return {
-          id,
-          name: user.name,
-          avatar: user.avatar,
-          valueText: commitCount.toString(),
-        };
-      }),
+      users: commitLeaderboard,
     }
   };
 }
@@ -320,11 +301,23 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     }
   }
 
+  const usersRankedByCommits = [...commitsPerUserThisSprint.entries()];
+  usersRankedByCommits.sort((a, b) => b[1] - a[1]);
+  console.log(usersRankedByCommits);
+  const commitLeaderboard = usersRankedByCommits.map(([id, commitCount]) => {
+    const user = users.get(id);
+    return {
+      id,
+      name: user.name,
+      avatar: user.avatar,
+      valueText: commitCount.toString(),
+    };
+  });
+
   return [
     buildLeadersSlide(
       currentSprint,
-      commitsPerUserThisSprint,
-      users,
+      commitLeaderboard,
     ),
     buildVoteSlide(
       currentSprint,
@@ -334,8 +327,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     buildChartSlide(
       currentSprint,
       commitsPerSprint,
-      commitsPerUserThisSprint,
-      users,
+      commitLeaderboard,
       sprintsByID,
     ),
     buildDiagramSlide(
