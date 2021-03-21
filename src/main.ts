@@ -86,7 +86,7 @@ class CommitSizes {
 }
 
 function buildVoteSlide(
-  sprint: Sprint,
+  currentSprint: Sprint,
   likesThisSprint: Map<UserId, number>,
   users: Map<UserId, User>,
 ): VoteSlide {
@@ -96,7 +96,7 @@ function buildVoteSlide(
     alias: 'vote',
     data: {
       title: 'Самый 🔎 внимательный разработчик',
-      subtitle: sprint.name,
+      subtitle: currentSprint.name,
       emoji: '🔎',
       users: usersRankedByLikes.map(([id, likeCount]) => {
         const user = users.get(id);
@@ -112,14 +112,14 @@ function buildVoteSlide(
 }
 
 function buildLeadersSlide(
-  sprint: Sprint,
+  currentSprint: Sprint,
   commitLeaderboard: LeadersData['users'],
 ): LeadersSlide {
   return {
     alias: 'leaders',
     data: {
       title: 'Больше всего коммитов',
-      subtitle: sprint.name,
+      subtitle: currentSprint.name,
       emoji: '👑',
       users: commitLeaderboard,
     }
@@ -127,7 +127,7 @@ function buildLeadersSlide(
 }
 
 function buildChartSlide(
-  sprint: Sprint,
+  currentSprint: Sprint,
   allSprints: Sprint[],
   commitsPerSprint: Map<SprintId, number>,
   commitLeaderboard: ChartData['users'],
@@ -138,14 +138,14 @@ function buildChartSlide(
     alias: 'chart',
     data: {
       title: 'Коммиты',
-      subtitle: sprint.name,
-      values: allSprints.map(thatSprint => {
+      subtitle: currentSprint.name,
+      values: allSprints.map(sprint => {
         const period: Period = {
-          title: thatSprint.id.toString(),
-          value: commitsPerSprint.get(thatSprint.id) ?? 0,
-          hint: thatSprint.name,
+          title: sprint.id.toString(),
+          value: commitsPerSprint.get(sprint.id) ?? 0,
+          hint: sprint.name,
         };
-        if (thatSprint.id === sprint.id) {
+        if (sprint.id === currentSprint.id) {
           period.active = true;
         }
         return period;
@@ -156,7 +156,7 @@ function buildChartSlide(
 }
 
 function buildDiagramSlide(
-  sprint: Sprint,
+  currentSprint: Sprint,
   commitSizesThisSprint: CommitSizes,
   commitSizesLastSprint: CommitSizes,
 ): DiagramSlide {
@@ -174,7 +174,7 @@ function buildDiagramSlide(
     alias: 'diagram',
     data: {
       title: 'Размер коммитов',
-      subtitle: sprint.name,
+      subtitle: currentSprint.name,
       totalText: pluralize(totalCommitsThisSprint, entityPluralizations.commits),
       differenceText: `${totalDifference > 0 ? '+' + totalDifference : totalDifference} с прошлого спринта`,
       categories: categories.map(([title, field]) => ({
@@ -191,14 +191,14 @@ function buildDiagramSlide(
 }
 
 function buildActivitySlide(
-  sprint: Sprint,
+  currentSprint: Sprint,
   commitTimeGrid: Activity[],
 ): ActivitySlide {
   return {
     alias: 'activity',
     data: {
       title: 'Коммиты',
-      subtitle: sprint.name,
+      subtitle: currentSprint.name,
       data: {
         mon: commitTimeGrid[1],
         tue: commitTimeGrid[2],
