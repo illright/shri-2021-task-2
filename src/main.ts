@@ -128,9 +128,9 @@ function buildLeadersSlide(
 
 function buildChartSlide(
   sprint: Sprint,
+  allSprints: Sprint[],
   commitsPerSprint: Map<SprintId, number>,
   commitLeaderboard: ChartData['users'],
-  sprintsByID: Map<SprintId, Sprint>,
 ): ChartSlide {
   const sprintsOrdered = [...commitsPerSprint.entries()];
   sprintsOrdered.sort(byMapKeyAsc);
@@ -139,14 +139,13 @@ function buildChartSlide(
     data: {
       title: 'Коммиты',
       subtitle: sprint.name,
-      values: sprintsOrdered.map(([id, commitCount]) => {
-        const thatSprint = sprintsByID.get(id);
+      values: allSprints.map(thatSprint => {
         const period: Period = {
-          title: id.toString(),
-          value: commitCount,
+          title: thatSprint.id.toString(),
+          value: commitsPerSprint.get(thatSprint.id) ?? 0,
           hint: thatSprint.name,
         };
-        if (id === sprint.id) {
+        if (thatSprint.id === sprint.id) {
           period.active = true;
         }
         return period;
@@ -310,9 +309,9 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     ),
     buildChartSlide(
       currentSprint,
+      sprints,
       commitsPerSprint,
       commitLeaderboard,
-      sprintsByID,
     ),
     buildDiagramSlide(
       currentSprint,
