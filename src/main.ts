@@ -313,14 +313,14 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   }
 
   return [
-    buildVoteSlide(
-      sprintId,
-      likesThisSprint,
-      users,
-    ),
     buildLeadersSlide(
       sprintId,
       commitsPerUserThisSprint,
+      users,
+    ),
+    buildVoteSlide(
+      sprintId,
+      likesThisSprint,
       users,
     ),
     buildChartSlide(
