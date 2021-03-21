@@ -19,6 +19,7 @@ export const entityPluralizations: Record<string, PluralizationRule> = {
 
 export function pluralize(amount: number, rule: PluralizationRule, forceSign = false) {
   const amountStr = (forceSign && amount > 0) ? `+${amount}` : amount.toString();
+  amount = Math.abs(amount);
 
   if (amount % 10 === 1 && (amount % 100 - 1) != 10) {
     return `${amountStr} ${rule.one}`;
