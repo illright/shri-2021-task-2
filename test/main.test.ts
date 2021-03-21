@@ -5,5 +5,5 @@ import type { Entity } from '../src/entities';
 
 test('works', () => {
   const myOutput = prepareData(inputData as Entity[], { sprintId: 977 });
-  expect(myOutput).toBe(outputData);
+  expect(myOutput).toEqual(outputData);
 })

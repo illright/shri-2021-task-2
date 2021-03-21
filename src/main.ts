@@ -133,6 +133,7 @@ function buildChartSlide(
   commitsPerSprint: Map<SprintId, number>,
   commitsPerUserThisSprint: Map<UserId, number>,
   users: Map<UserId, User>,
+  sprintsByID: Map<SprintId, Sprint>,
 ): ChartSlide {
   const commitsHeap = new Heap((a: [number, number], b: [number, number]) => a[1] - b[1]);
   commitsHeap.push(...commitsPerUserThisSprint.entries());
@@ -142,7 +143,12 @@ function buildChartSlide(
       title: 'Коммиты',
       subtitle: sprint.name,
       values: [...commitsPerSprint.entries()].map(([id, commitCount]) => {
-        const period: Period = { title: id.toString(), value: commitCount };
+        const sprint = sprintsByID.get(id);
+        const period: Period = {
+          title: id.toString(),
+          value: commitCount,
+          hint: sprint.name,
+        };
         if (id === sprint.id) {
           period.active = true;
         }
@@ -155,7 +161,7 @@ function buildChartSlide(
           name: user.name,
           avatar: user.avatar,
           valueText: commitCount.toString(),
-        }
+        };
       }),
     }
   };
@@ -235,6 +241,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   const commits: Commit[] = [];
   const summaries = new Map<SummaryId, Summary>();
   const sprints: Sprint[] = [];
+  const sprintsByID = new Map<SprintId, Sprint>();
 
   let currentSprint: Sprint;
   let lastSprint: Sprint;
@@ -256,6 +263,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
         lastSprint = entity;
       }
       sprints.push(entity);
+      sprintsByID.set(entity.id, entity);
     }
   }
 
@@ -329,6 +337,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
       commitsPerSprint,
       commitsPerUserThisSprint,
       users,
+      sprintsByID,
     ),
     buildDiagramSlide(
       currentSprint,
