@@ -1,6 +1,4 @@
-import type {
-  Sprint,
-} from './entities';
+import type { Sprint } from '../entities';
 
 export function bySprintStartTime(a: Sprint, b: Sprint) {
   return a.startAt - b.startAt;
