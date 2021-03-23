@@ -11,7 +11,7 @@ export default {
 		sourcemap: true,
 		format: 'iife',
 		name: 'app',
-		file: 'build/stories.js'
+		file: 'build/index.js'
 	},
 	plugins: [
 		resolve({
