@@ -1,10 +1,17 @@
-import inputData from './data/input.json';
-import outputData from './data/output.json';
+import fetch from 'node-fetch';
 import { prepareData } from '../src/main';
 import type { Entity } from '../src/entities';
+import type { Slide } from '../src/task1';
 
-test('the example input produces the example output', () => {
+test('The example input produces the example output', async () => {
   const exampleSprint = 977;
-  const myOutput = prepareData(inputData as Entity[], { sprintId: exampleSprint });
+  const exampleDataBaseURL = 'https://raw.githubusercontent.com/yndx-shri/shri-2021-task-2/master/examples';
+  const exampleInputURL = `${exampleDataBaseURL}/input.json`;
+  const exampleOutputURL = `${exampleDataBaseURL}/output.json`;
+
+  const inputData = await fetch(exampleInputURL).then(x => x.json()) as Entity[];
+  const outputData = await fetch(exampleOutputURL).then(x => x.json()) as Slide[];
+
+  const myOutput = prepareData(inputData, { sprintId: exampleSprint });
   expect(myOutput).toEqual(outputData);
-})
+});
