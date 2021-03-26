@@ -3,6 +3,14 @@ import { byMapValueDesc } from '../utils/comparators';
 import type { VoteSlide } from '../task1';
 import type { Sprint, User, UserId } from '../entities';
 
+/**
+ * Construct the data for the Vote slide.
+ *
+ * @param currentSprint The data of the current sprint.
+ * @param likesThisSprint The mapping of user IDs to the amount of likes they got on their comments this sprint.
+ * @param users The mapping of user IDs to their data.
+ * @return The data for the Vote slide.
+ */
 export default function buildVoteSlide(
   currentSprint: Sprint,
   likesThisSprint: Map<UserId, number>,

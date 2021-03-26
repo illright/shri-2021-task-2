@@ -3,6 +3,14 @@ import type { CommitSizes } from '../utils/data-structures';
 import type { DiagramSlide } from '../task1';
 import type { Sprint } from '../entities';
 
+/**
+ * Construct the data for the Diagram slide.
+ *
+ * @param currentSprint The data of the current sprint.
+ * @param commitSizesThisSprint A counter for commits of different sizes made during this sprint.
+ * @param commitSizesLastSprint A counter for commits of different sizes made during the last sprint.
+ * @return The data for the Diagram slide.
+ */
 export default function buildDiagramSlide(
   currentSprint: Sprint,
   commitSizesThisSprint: CommitSizes,

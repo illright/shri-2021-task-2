@@ -28,10 +28,20 @@ import type {
   UserId,
 } from './entities';
 
+
+/** Determine whether a particular timestamp falls within the duration of a sprint. */
 function withinSprint(timestamp: number, sprint: Sprint) {
   return relativeToSprint(sprint, timestamp) === RelativePosition.Within;
 }
 
+/**
+ * Consume a stream of entities from the backend and process them to form slide data.
+ *
+ * @param entities The stream of entities.
+ * @param currentSprint The data object containing the ID of the current sprint.
+ * @param currentSprint.sprintId The sprint ID.
+ * @return The data for 5 slides: Leaders, Vote, Chart, Diagram, Activity.
+ */
 export function prepareData(entities: Entity[], { sprintId }: { sprintId: number }): Slide[] {
   let currentSprint: Sprint;
   let lastSprint: Sprint;

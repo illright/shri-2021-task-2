@@ -2,6 +2,15 @@ import { byMapKeyAsc } from '../utils/comparators';
 import type { ChartData, ChartSlide, Period } from '../task1';
 import type { Sprint, SprintId } from '../entities';
 
+/**
+ * Construct the data for the Chart slide.
+ *
+ * @param currentSprint The data of the current sprint.
+ * @param allSprints A list of all sprints.
+ * @param commitsPerSprint A mapping of a sprint ID to the amount of commits made during that sprint.
+ * @param commitLeaderboard A list of sprint participants, ordered by the amount of commits descending.
+ * @return The data for the Chart slide.
+ */
 export default function buildChartSlide(
   currentSprint: Sprint,
   allSprints: Sprint[],
