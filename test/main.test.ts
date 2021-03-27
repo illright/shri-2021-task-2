@@ -34,18 +34,16 @@ test('The example input produces the example output', async () => {
 });
 
 test('The Leaders and Chart slides are constructed correctly', () => {
-  const commitDistribution = [
-    [0, 1, 2, 0, 3],
-    [1, 1, 4, 0, 1],
-    [22, 2, 11, 0, 5],
-  ];
-  const userAmount = commitDistribution[0].length;
-  const sprintAmount = commitDistribution.length;
+  const userAmount = 5;
+  const sprintAmount = 3;
   const currentSprintIdx = sprintAmount - 1;
+  const commitDistributionPerUser = new Array(sprintAmount).map(
+    () => new Array(userAmount).map(() => randInt(0, 25))
+  );
 
   const users = generate.users(userAmount);
   const sprints = generate.sprints(sprintAmount, randInt(0, 1000));
-  const commits = generate.commitsInQuantity(commitDistribution, sprints[0].startAt);
+  const commits = generate.commitsInQuantity(commitDistributionPerUser, sprints[0].startAt);
   const input: Entity[] = [
     ...users,
     ...sprints,
@@ -58,7 +56,7 @@ test('The Leaders and Chart slides are constructed correctly', () => {
       title: 'Больше всего коммитов',
       subtitle: sprints[currentSprintIdx].name,
       emoji: '👑',
-      users: commitDistribution[currentSprintIdx]
+      users: commitDistributionPerUser[currentSprintIdx]
         .map((elem, idx) => [elem, idx])
         .filter(([elem, _idx]) => elem > 0)
         .sort((a, b) => b[0] - a[0])
@@ -72,7 +70,7 @@ test('The Leaders and Chart slides are constructed correctly', () => {
       title: 'Коммиты',
       subtitle: sprints[currentSprintIdx].name,
       users: expectedLeaders.data.users,
-      values: commitDistribution.map((sprint, idx) => ({
+      values: commitDistributionPerUser.map((sprint, idx) => ({
         title: sprints[idx].id.toString(),
         value: sprint.reduce((acc, elem) => acc + elem, 0),
         hint: sprints[idx].name,
@@ -89,18 +87,16 @@ test('The Leaders and Chart slides are constructed correctly', () => {
 });
 
 test('The Vote slide is constructed correctly', () => {
-  const likesDistribution = [
-    [0, 1, 2, 0, 3],
-    [1, 1, 4, 0, 1],
-    [22, 2, 11, 0, 5],
-  ];
-  const userAmount = likesDistribution[0].length;
-  const sprintAmount = likesDistribution.length;
-  const currentSprintIdx = sprintAmount - 1;
+    const userAmount = 5;
+    const sprintAmount = 3;
+    const currentSprintIdx = sprintAmount - 1;
+    const likesDistributionPerUser = new Array(sprintAmount).map(
+      () => new Array(userAmount).map(() => randInt(0, 25))
+    );
 
   const users = generate.users(userAmount);
   const sprints = generate.sprints(sprintAmount, randInt(0, 1000));
-  const comments = generate.commentsOfRating(likesDistribution, sprints[0].startAt);
+  const comments = generate.commentsOfRating(likesDistributionPerUser, sprints[0].startAt);
   const input: Entity[] = [
     ...users,
     ...sprints,
@@ -113,7 +109,7 @@ test('The Vote slide is constructed correctly', () => {
       title: 'Самый 🔎 внимательный разработчик',
       subtitle: sprints[currentSprintIdx].name,
       emoji: '🔎',
-      users: likesDistribution[currentSprintIdx]
+      users: likesDistributionPerUser[currentSprintIdx]
         .map((elem, idx) => [elem, idx])
         .filter(([elem, _idx]) => elem > 0)
         .sort((a, b) => b[0] - a[0])
