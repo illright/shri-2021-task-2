@@ -2,6 +2,11 @@ import faker from 'faker';
 import randInt from './utils/rand-int';
 import type { User, Sprint, Commit, Comment } from '../src/entities';
 
+const sprintDurationDays = 7;
+const hourMs = 60 * 60 * 1000;
+const dayMs = 24 * hourMs;
+const sprintDurationMs = sprintDurationDays * dayMs;
+
 /**
  * Generate a list of `amount` users.
  * Their IDs will be numbered consecutively from 0.
@@ -34,7 +39,6 @@ export function users(amount: number) {
  * @return A list of sprints.
  */
 export function sprints(amount: number, idOffset: number) {
-  const sprintDurationDays = 7;
   const result: Sprint[] = [];
   const startDate = new Date(randInt(2000, 2050), randInt(0, 11), randInt(0, 28));
 
@@ -69,7 +73,6 @@ export function sprints(amount: number, idOffset: number) {
  * @return A list of commits.
  */
 export function commitsInQuantity(distribution: number[][], firstSprintStart: number) {
-  const sprintDurationMs = 7 * 24 * 60 * 60 * 1000;
   const result: Commit[] = [];
 
   let commitID = randInt(0, 1000);
@@ -84,6 +87,48 @@ export function commitsInQuantity(distribution: number[][], firstSprintStart: nu
           summaries: [],
           timestamp: randInt(firstSprintStart, firstSprintStart + sprintDurationMs - 1),
         });
+      }
+    }
+    firstSprintStart += sprintDurationMs;
+  }
+
+  return result;
+}
+
+/**
+ * Generate a list of commits distributed among sprints and users at certain times.
+ * The distribution is specified as an array of arrays representing sprints.
+ * Inside of those inner arrays are 7 arrays (one for each weekday) of 24 elements (one for each hour).
+ *
+ * @param distribution An array of arrays for sprints with amounts of commits for hour of weekday.
+ * @param firstSprintStart The starting time of the first sprint.
+ * @param userAmount The amount of users in the data stream.
+ * @return A list of commits.
+ */
+export function commitsAtTime(
+  distribution: number[][][],
+  firstSprintStart: number,
+  userAmount: number,
+) {
+  const result: Commit[] = [];
+
+  let commitID = randInt(0, 1000);
+  for (let sprintIdx = 0; sprintIdx < distribution.length; ++sprintIdx) {
+    for (let weekday = 0; weekday < distribution[sprintIdx].length; ++weekday) {
+      for (let hour = 0; hour < distribution[sprintIdx][weekday].length; ++hour) {
+        for (let _ = 0; _ < distribution[sprintIdx][weekday][hour]; ++_) {
+          result.push({
+            type: 'Commit',
+            id: (commitID++).toString(),
+            author: randInt(0, userAmount - 1),
+            message: faker.git.commitMessage(),
+            summaries: [],
+            timestamp: randInt(
+              firstSprintStart + weekday * dayMs + hour * hourMs,
+              firstSprintStart + weekday * dayMs + (hour + 1) * hourMs - 1,
+            ),
+          });
+        }
       }
     }
     firstSprintStart += sprintDurationMs;

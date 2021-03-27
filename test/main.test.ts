@@ -4,7 +4,14 @@ import * as generate from './entity-generators';
 import { prepareData } from '../src/main';
 import { pluralize, entityPluralizations } from '../src/utils/pluralization';
 import type { Entity, User } from '../src/entities';
-import type { Slide, TeamMember, LeadersSlide, VoteSlide, ChartSlide } from '../src/task1';
+import type {
+  ActivitySlide,
+  ChartSlide,
+  LeadersSlide,
+  Slide,
+  TeamMember,
+  VoteSlide,
+} from '../src/task1';
 
 jest.setTimeout(10000);
 
@@ -37,8 +44,8 @@ test('The Leaders and Chart slides are constructed correctly', () => {
   const userAmount = 5;
   const sprintAmount = 3;
   const currentSprintIdx = sprintAmount - 1;
-  const commitDistributionPerUser = new Array(sprintAmount).map(
-    () => new Array(userAmount).map(() => randInt(0, 25))
+  const commitDistributionPerUser = new Array(sprintAmount).fill(null).map(
+    () => new Array(userAmount).fill(null).map(() => randInt(0, 25))
   );
 
   const users = generate.users(userAmount);
@@ -90,8 +97,8 @@ test('The Vote slide is constructed correctly', () => {
     const userAmount = 5;
     const sprintAmount = 3;
     const currentSprintIdx = sprintAmount - 1;
-    const likesDistributionPerUser = new Array(sprintAmount).map(
-      () => new Array(userAmount).map(() => randInt(0, 25))
+    const likesDistributionPerUser = new Array(sprintAmount).fill(null).map(
+      () => new Array(userAmount).fill(null).map(() => randInt(0, 25))
     );
 
   const users = generate.users(userAmount);
@@ -121,5 +128,38 @@ test('The Vote slide is constructed correctly', () => {
   }
 
   const myOutput = prepareData(input, { sprintId: sprints[currentSprintIdx].id })[indices.vote];
+  expect(myOutput).toEqual(expectedOutput);
+});
+
+test('The Activity slide is constructed correctly', () => {
+  const userAmount = 5;
+  const sprintAmount = 3;
+  const currentSprintIdx = sprintAmount - 1;
+  const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const commitDistributionPerHour = new Array(sprintAmount).fill(null).map(
+    () => weekdays.map(() => new Array(24).fill(null).map(() => randInt(0, 5)))
+  );
+
+  const users = generate.users(userAmount);
+  const sprints = generate.sprints(sprintAmount, randInt(0, 1000));
+  const commits = generate.commitsAtTime(commitDistributionPerHour, sprints[0].startAt, userAmount);
+  const input: Entity[] = [
+    ...users,
+    ...sprints,
+    ...commits,
+  ];
+
+  const expectedOutput: ActivitySlide = {
+    alias: 'activity',
+    data: {
+      title: 'Коммиты',
+      subtitle: sprints[currentSprintIdx].name,
+      data: Object.fromEntries(
+        weekdays.map((key, idx) => [key, commitDistributionPerHour[currentSprintIdx][idx]])
+      ) as ActivitySlide['data']['data'],
+    }
+  }
+
+  const myOutput = prepareData(input, { sprintId: sprints[currentSprintIdx].id })[indices.activity];
   expect(myOutput).toEqual(expectedOutput);
 });
