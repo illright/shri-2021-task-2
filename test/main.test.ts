@@ -4,7 +4,7 @@ import * as generate from './entity-generators';
 import { prepareData } from '../src/main';
 import { pluralize, entityPluralizations } from '../src/utils/pluralization';
 import type { Entity, User } from '../src/entities';
-import type { Slide, TeamMember, LeadersSlide, VoteSlide } from '../src/task1';
+import type { Slide, TeamMember, LeadersSlide, VoteSlide, ChartSlide } from '../src/task1';
 
 jest.setTimeout(10000);
 
@@ -33,7 +33,7 @@ test('The example input produces the example output', async () => {
   expect(myOutput).toEqual(outputData);
 });
 
-test('The Leaders slide is constructed correctly', () => {
+test('The Leaders and Chart slides are constructed correctly', () => {
   const commitDistribution = [
     [0, 1, 2, 0, 3],
     [1, 1, 4, 0, 1],
@@ -52,7 +52,7 @@ test('The Leaders slide is constructed correctly', () => {
     ...commits,
   ];
 
-  const expectedOutput: LeadersSlide = {
+  const expectedLeaders: LeadersSlide = {
     alias: 'leaders',
     data: {
       title: 'Больше всего коммитов',
@@ -66,8 +66,26 @@ test('The Leaders slide is constructed correctly', () => {
     }
   }
 
-  const myOutput = prepareData(input, { sprintId: sprints[currentSprintIdx].id })[indices.leaders];
-  expect(myOutput).toEqual(expectedOutput);
+  const expectedChart: ChartSlide = {
+    alias: 'chart',
+    data: {
+      title: 'Коммиты',
+      subtitle: sprints[currentSprintIdx].name,
+      users: expectedLeaders.data.users,
+      values: commitDistribution.map((sprint, idx) => ({
+        title: sprints[idx].id.toString(),
+        value: sprint.reduce((acc, elem) => acc + elem, 0),
+        hint: sprints[idx].name,
+        ...(idx === currentSprintIdx ? { active: true } : {}),
+      })),
+    }
+  };
+
+  const slides = prepareData(input, { sprintId: sprints[currentSprintIdx].id });
+  const myLeaders = slides[indices.leaders];
+  const myChart = slides[indices.chart];
+  expect(myLeaders).toEqual(expectedLeaders);
+  expect(myChart).toEqual(expectedChart);
 });
 
 test('The Vote slide is constructed correctly', () => {
