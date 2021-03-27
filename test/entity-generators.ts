@@ -1,6 +1,6 @@
 import faker from 'faker';
 import randInt from './utils/rand-int';
-import type { User, Sprint, Commit } from '../src/entities';
+import type { User, Sprint, Commit, Comment } from '../src/entities';
 
 /**
  * Generate a list of `amount` users.
@@ -60,7 +60,7 @@ export function sprints(amount: number, idOffset: number) {
 }
 
 /**
- * Generate a list of commits distributed among sprints and users.
+ * Generate a list of commits distributed among sprints and users in certain quantities.
  * The distribution is specified as an array of arrays representing sprints.
  * Inside of those inner arrays are amounts of commits for each user.
  *
@@ -68,7 +68,7 @@ export function sprints(amount: number, idOffset: number) {
  * @param firstSprintStart The starting time of the first sprint.
  * @return A list of commits.
  */
-export function commits(distribution: number[][], firstSprintStart: number) {
+export function commitsInQuantity(distribution: number[][], firstSprintStart: number) {
   const sprintDurationMs = 7 * 24 * 60 * 60 * 1000;
   const result: Commit[] = [];
 
@@ -83,6 +83,42 @@ export function commits(distribution: number[][], firstSprintStart: number) {
           message: faker.git.commitMessage(),
           summaries: [],
           timestamp: randInt(firstSprintStart, firstSprintStart + sprintDurationMs - 1),
+        });
+      }
+    }
+    firstSprintStart += sprintDurationMs;
+  }
+
+  return result;
+}
+
+/**
+ * Generate a list of comments distributed among sprints and users of certain amount of likes.
+ * The distribution is specified as an array of arrays representing sprints.
+ * Inside of those inner arrays are total amounts of likes for the comments of each user.
+ *
+ * @param distribution An array of arrays for sprints with amounts of likes for users.
+ * @param firstSprintStart The starting time of the first sprint.
+ * @return A list of comments.
+ */
+export function commentsOfRating(distribution: number[][], firstSprintStart: number) {
+  const sprintDurationMs = 7 * 24 * 60 * 60 * 1000;
+  const result: Comment[] = [];
+
+  let commentID = randInt(0, 1000);
+  for (let sprintIdx = 0; sprintIdx < distribution.length; ++sprintIdx) {
+    for (let userIdx = 0; userIdx < distribution[sprintIdx].length; ++userIdx) {
+      let remainingLikes = distribution[sprintIdx][userIdx];
+      while (remainingLikes) {
+        const thisCommentLikes = remainingLikes === 1 ? 1 : randInt(0, remainingLikes);
+        remainingLikes -= thisCommentLikes;
+        result.push({
+          type: 'Comment',
+          id: (commentID++).toString(),
+          author: userIdx,
+          message: faker.internet.email(),
+          createdAt: randInt(firstSprintStart, firstSprintStart + sprintDurationMs - 1),
+          likes: new Array(thisCommentLikes).map(() => randInt(0, distribution[sprintIdx].length)),
         });
       }
     }
