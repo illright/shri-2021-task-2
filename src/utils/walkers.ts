@@ -10,6 +10,13 @@ import type {
   UserId,
 } from '../entities';
 
+/**
+ * Recursively traverse and track all embedded objects inside of a User object.
+ * Those are:
+ *  - friends (User[])
+ *  - commits (Commit[])
+ *  - comments (Comment[])
+ */
 function walkUser(
   user: User,
   users: Map<UserId, User>,
@@ -31,6 +38,13 @@ function walkUser(
   commentObjects.forEach(x => walkComment(x, users, commits, comments, summaries));
 }
 
+/**
+ * Recursively traverse and track all embedded objects inside of a Commit object.
+ * Those are:
+ *  - author (User)
+ *  - summaries (Summary[])
+ *  - comments (Comment[])
+ */
 function walkCommit(
   commit: Commit,
   users: Map<UserId, User>,
@@ -51,6 +65,12 @@ function walkCommit(
   }
 }
 
+/**
+ * Recursively traverse and track all embedded objects inside of a Comment object.
+ * Those are:
+ *  - author (User)
+ *  - likes (User[])
+ */
 function walkComment(
   comment: Comment,
   users: Map<UserId, User>,
@@ -70,6 +90,11 @@ function walkComment(
   }
 }
 
+/**
+ * Recursively traverse and track all embedded objects inside of a Summary object.
+ * Those are:
+ *  - comments (Comment[])
+ */
 function walkSummary(
   summary: Summary,
   users: Map<UserId, User>,
@@ -82,6 +107,13 @@ function walkSummary(
   commentObjects.forEach(x => walkComment(x, users, commits, comments, summaries));
 }
 
+/**
+ * Recursively traverse and track all embedded objects inside of a Commit object.
+ * Those are:
+ *  - dependencies (Project[])
+ *  - issues (Issue[])
+ *  - commits (Commit[])
+ */
 function walkProject(
   project: Project,
   users: Map<UserId, User>,
@@ -106,6 +138,12 @@ function walkProject(
   commitObjects.forEach(x => walkCommit(x, users, commits, comments, summaries));
 }
 
+/**
+ * Recursively traverse and track all embedded objects inside of an Issue object.
+ * Those are:
+ *  - comments (Comment[])
+ *  - resolvedBy (User)
+ */
 function walkIssue(
   issue: Issue,
   users: Map<UserId, User>,
