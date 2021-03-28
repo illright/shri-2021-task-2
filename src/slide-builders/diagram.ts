@@ -1,5 +1,5 @@
 import { pluralize, entityPluralizations } from '../utils/pluralization';
-import type { CommitSizes } from '../utils/data-structures';
+import type CommitSizes from '../utils/commit-sizes';
 import type { DiagramSlide } from '../task1';
 import type { Sprint } from '../entities';
 

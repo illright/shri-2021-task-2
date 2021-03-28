@@ -2,7 +2,7 @@ import getID from './get-id';
 import type { Commit, Summary, SummaryId } from '../entities';
 
 /** A counter for commits of different sizes. */
-export class CommitSizes {
+export default class CommitSizes {
   /** The amount of commits from 1 to 100 lines in size. */
   upTo100: number;
   /** The amount of commits from 101 to 500 lines in size. */

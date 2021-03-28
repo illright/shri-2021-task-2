@@ -7,7 +7,7 @@ import {
   RelativePosition,
 } from './utils/comparators';
 import getID, { isEntity } from './utils/get-id';
-import { CommitSizes } from './utils/data-structures';
+import CommitSizes from './utils/commit-sizes';
 import * as walk from './utils/walkers';
 import {
   buildVoteSlide,

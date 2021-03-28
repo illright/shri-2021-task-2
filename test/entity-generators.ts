@@ -148,7 +148,7 @@ export function commitsAtTime(
  * Generate a list of commits distributed among sprints of certain sizes.
  * The distribution is specified as an array of arrays representing sprints.
  * Inside of those inner arrays are amounts of commits for each size category
- * (see src/utils/data-structures.ts).
+ * (see src/utils/commit-sizes.ts).
  *
  * @param distribution An array of arrays for sprints with amounts of commits for users.
  * @param firstSprintStart The starting time of the first sprint.
