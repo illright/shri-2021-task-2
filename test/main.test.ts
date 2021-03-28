@@ -15,7 +15,7 @@ import type {
   VoteSlide,
 } from '../src/task1';
 
-jest.setTimeout(10000);
+jest.setTimeout(15000);
 
 const indices = {
   leaders: 0,

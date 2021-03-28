@@ -43,7 +43,6 @@ function walkUser(
  * Those are:
  *  - author (User)
  *  - summaries (Summary[])
- *  - comments (Comment[])
  */
 function walkCommit(
   commit: Commit,
@@ -79,6 +78,7 @@ function walkComment(
   summaries: Map<SummaryId, Summary>,
 ) {
   if (isEntity(comment.author)) {
+    users.set(comment.author.id, comment.author);
     walkUser(comment.author, users, commits, comments, summaries);
   }
 
@@ -157,6 +157,7 @@ function walkIssue(
 
   if (isEntity(issue?.resolvedBy)) {
     users.set(issue.resolvedBy.id, issue.resolvedBy);
+    walkUser(issue.resolvedBy, users, commits, comments, summaries);
   }
 }
 

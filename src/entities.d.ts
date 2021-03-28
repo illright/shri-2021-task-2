@@ -69,7 +69,7 @@ export interface Commit {
     timestamp: Timestamp;
 }
 
-/** Файл внутри коммита ? */
+/** Файл внутри коммита */
 export interface Summary {
     id: SummaryId;
     type: 'Summary';
