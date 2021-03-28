@@ -43,9 +43,9 @@ test('The example input produces the example output', async () => {
 });
 
 test('The Leaders and Chart slides are constructed correctly', () => {
-  const userAmount = 5;
-  const sprintAmount = 3;
-  const currentSprintIdx = sprintAmount - 1;
+  const userAmount = randInt(5, 10);
+  const sprintAmount = randInt(3, 10);
+  const currentSprintIdx = randInt(1, sprintAmount - 1);
   const commitDistributionPerUser = new Array(sprintAmount).fill(null).map(
     () => new Array(userAmount).fill(null).map(() => randInt(0, 25))
   );
@@ -96,9 +96,9 @@ test('The Leaders and Chart slides are constructed correctly', () => {
 });
 
 test('The Vote slide is constructed correctly', () => {
-  const userAmount = 5;
-  const sprintAmount = 3;
-  const currentSprintIdx = sprintAmount - 1;
+  const userAmount = randInt(5, 10);
+  const sprintAmount = randInt(3, 10);
+  const currentSprintIdx = randInt(1, sprintAmount - 1);
   const likesDistributionPerUser = new Array(sprintAmount).fill(null).map(
     () => new Array(userAmount).fill(null).map(() => randInt(0, 25))
   );
@@ -134,9 +134,9 @@ test('The Vote slide is constructed correctly', () => {
 });
 
 test('The Diagram slide is constructed correctly', () => {
-  const userAmount = 5;
-  const sprintAmount = 3;
-  const currentSprintIdx = sprintAmount - 1;
+  const userAmount = randInt(5, 10);
+  const sprintAmount = randInt(3, 10);
+  const currentSprintIdx = randInt(1, sprintAmount - 1);
   const categories = [
     '> 1001 строки',
     '501 — 1000 строк',
@@ -195,9 +195,9 @@ test('The Diagram slide is constructed correctly', () => {
 });
 
 test('The Activity slide is constructed correctly', () => {
-  const userAmount = 5;
-  const sprintAmount = 3;
-  const currentSprintIdx = sprintAmount - 1;
+  const userAmount = randInt(5, 10);
+  const sprintAmount = randInt(3, 10);
+  const currentSprintIdx = randInt(1, sprintAmount - 1);
   const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const commitDistributionPerHour = new Array(sprintAmount).fill(null).map(
     () => weekdays.map(() => new Array(24).fill(null).map(() => randInt(0, 5)))
