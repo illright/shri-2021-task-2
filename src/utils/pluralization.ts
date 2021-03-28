@@ -21,6 +21,11 @@ export const entityPluralizations: Record<string, PluralizationRule> = {
     one: 'коммит',
     two: 'коммита',
     five: 'коммитов',
+  },
+  fromLastSprint: {
+    one: 'с прошлого спринта',
+    two: 'с прошлого спринта',
+    five: 'с прошлого спринта',
   }
 }
 

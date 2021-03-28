@@ -32,7 +32,7 @@ export default function buildDiagramSlide(
       title: 'Размер коммитов',
       subtitle: currentSprint.name,
       totalText: pluralize(totalCommitsThisSprint, entityPluralizations.commits),
-      differenceText: `${totalDifference > 0 ? '+' + totalDifference : totalDifference} с прошлого спринта`,
+      differenceText: pluralize(totalDifference, entityPluralizations.fromLastSprint, forceSign),
       categories: categories.map(([title, field]) => ({
         title,
         valueText: pluralize(commitSizesThisSprint[field], entityPluralizations.commits),
