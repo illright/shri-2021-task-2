@@ -1,5 +1,5 @@
 import faker from 'faker';
-import randInt from './utils/rand-int';
+import randInt from '../src/utils/rand-int';
 import type { User, Sprint, Commit, Comment } from '../src/entities';
 
 const sprintDurationDays = 7;
@@ -40,7 +40,7 @@ export function users(amount: number) {
  */
 export function sprints(amount: number, idOffset: number) {
   const result: Sprint[] = [];
-  const startDate = new Date(randInt(2000, 2050), randInt(0, 11), randInt(0, 28));
+  const startDate = new Date(randInt(2000, 2050), randInt(0, 11), randInt(1, 28));
 
   for (let i = idOffset; i < idOffset + amount; ++i) {
     result.push({

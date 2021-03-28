@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import randInt from './utils/rand-int';
+import randInt from '../src/utils/rand-int';
 import * as generate from './entity-generators';
 import { prepareData } from '../src/main';
 import { pluralize, entityPluralizations } from '../src/utils/pluralization';
