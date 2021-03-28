@@ -6,8 +6,9 @@ import {
   relativeToSprint,
   RelativePosition,
 } from './utils/comparators';
-import getID from './utils/get-id';
+import getID, { isEntity } from './utils/get-id';
 import { CommitSizes } from './utils/data-structures';
+import * as walk from './utils/walkers';
 import {
   buildVoteSlide,
   buildLeadersSlide,
@@ -56,12 +57,16 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   for (const entity of entities) {
     if (entity.type === 'User') {
       users.set(entity.id, entity);
+      walk.user(entity, users, commits, comments, summaries);
     } else if (entity.type === 'Comment') {
       comments.push(entity);
+      walk.comment(entity, users, commits, comments, summaries);
     } else if (entity.type === 'Commit') {
       commits.push(entity);
+      walk.commit(entity, users, commits, comments, summaries);
     } else if (entity.type === 'Summary') {
       summaries.set(entity.id, entity);
+      walk.summary(entity, users, commits, comments, summaries);
     } else if (entity.type === 'Sprint') {
       if (entity.id === sprintId) {
         currentSprint = entity;
@@ -71,6 +76,10 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
       }
       sprints.push(entity);
       sprintsByID.set(entity.id, entity);
+    } else if (entity.type === 'Project') {
+      walk.project(entity, users, commits, comments, summaries)
+    } else {
+      walk.issue(entity, users, commits, comments, summaries);
     }
   }
 

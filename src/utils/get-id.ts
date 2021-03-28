@@ -1,7 +1,7 @@
 import type { Entity } from '../entities';
 
 /** A custom type guard to determine whether a certain object is an Entity. */
-function isEntity<T extends Entity>(arg: T | T['id']): arg is T {
+export function isEntity<T extends Entity>(arg: T | T['id']): arg is T {
   return typeof arg === 'object' && 'id' in arg && 'type' in arg;
 }
 
