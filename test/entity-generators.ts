@@ -1,15 +1,14 @@
 import faker from 'faker';
 import randInt from '../src/utils/rand-int';
-import type { User, Sprint, Commit, Comment } from '../src/entities';
+import uid from './uid';
+import type { User, Sprint, Summary, Commit, Comment } from '../src/entities';
 
 const sprintDurationDays = 7;
 const hourMs = 60 * 60 * 1000;
 const dayMs = 24 * hourMs;
 const sprintDurationMs = sprintDurationDays * dayMs;
 
-/**
- * Move the date to a monday.
- */
+/** Move the date to a monday. */
 function nudgeToMonday(date: Date) {
   date.setDate(date.getDate() - date.getDay() + 1);
 }
@@ -140,6 +139,75 @@ export function commitsAtTime(
       }
     }
     firstSprintStart += sprintDurationMs;
+  }
+
+  return result;
+}
+
+/**
+ * Generate a list of commits distributed among sprints of certain sizes.
+ * The distribution is specified as an array of arrays representing sprints.
+ * Inside of those inner arrays are amounts of commits for each size category
+ * (see src/utils/data-structures.ts).
+ *
+ * @param distribution An array of arrays for sprints with amounts of commits for users.
+ * @param firstSprintStart The starting time of the first sprint.
+ * @param userAmount The amount of users in the data stream.
+ * @return A list of commits.
+ */
+export function commitsOfSizes(
+  distribution: number[][],
+  firstSprintStart: number,
+  userAmount: number,
+) {
+  const result: (Commit | Summary)[] = [];
+  const sizeBounds = [
+    [1001, 10000],
+    [501, 1000],
+    [101, 500],
+    [1, 100],
+  ];
+
+  let commitID = randInt(0, 1000);
+  for (let sprintIdx = 0; sprintIdx < distribution.length; ++sprintIdx) {
+    for (let sizeIdx = 0; sizeIdx < distribution[sprintIdx].length; ++sizeIdx) {
+      for (let _ = 0; _ < distribution[sprintIdx][sizeIdx]; ++_) {
+        const summaries = summariesOfSize(randInt(sizeBounds[sizeIdx][0], sizeBounds[sizeIdx][1]));
+        result.push({
+          type: 'Commit',
+          id: (commitID++).toString(),
+          author: randInt(0, userAmount - 1),
+          message: faker.git.commitMessage(),
+          summaries,
+          timestamp: randInt(firstSprintStart, firstSprintStart + sprintDurationMs - 1),
+        });
+      }
+    }
+    firstSprintStart += sprintDurationMs;
+  }
+
+  return result;
+}
+
+/**
+ * Generate a list of summaries of a certain total size.
+ *
+ * @param size The total size to reach with the summaries.
+ * @return A list of summaries.
+ */
+export function summariesOfSize(size: number) {
+  const result: Summary[] = [];
+  while (size > 0) {
+    const summarySize = randInt(1, size);
+    size -= summarySize;
+    const added = randInt(1, summarySize);
+    result.push({
+      id: uid(),
+      type: 'Summary',
+      path: faker.internet.url(),
+      added,
+      removed: summarySize - added,
+    });
   }
 
   return result;

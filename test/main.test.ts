@@ -8,6 +8,7 @@ import type { Entity, User } from '../src/entities';
 import type {
   ActivitySlide,
   ChartSlide,
+  DiagramSlide,
   LeadersSlide,
   Slide,
   TeamMember,
@@ -129,6 +130,67 @@ test('The Vote slide is constructed correctly', () => {
   }
 
   const myOutput = prepareData(input, { sprintId: sprints[currentSprintIdx].id })[indices.vote];
+  expect(myOutput).toEqual(expectedOutput);
+});
+
+test('The Diagram slide is constructed correctly', () => {
+  const userAmount = 5;
+  const sprintAmount = 3;
+  const currentSprintIdx = sprintAmount - 1;
+  const categories = [
+    '> 1001 строки',
+    '501 — 1000 строк',
+    '101 — 500 строк',
+    '1 — 100 строк',
+  ];
+  const commitSizesDistributionPerSprint = new Array(sprintAmount).fill(null).map(
+    () => new Array(categories.length).fill(null).map(() => randInt(0, 100))
+  );
+
+  const users = generate.users(userAmount);
+  const sprints = generate.sprints(sprintAmount, randInt(0, 1000));
+  const commits = generate.commitsOfSizes(
+    commitSizesDistributionPerSprint,
+    sprints[0].startAt,
+    userAmount,
+  );
+  const input: Entity[] = [
+    ...users,
+    ...sprints,
+    ...commits,
+  ];
+
+  const totalThisSprint = sum(commitSizesDistributionPerSprint[currentSprintIdx]);
+  const totalLastSprint = sum(commitSizesDistributionPerSprint[currentSprintIdx - 1]);
+  const forceSign = true;
+  const expectedOutput: DiagramSlide = {
+    alias: 'diagram',
+    data: {
+      title: 'Размер коммитов',
+      subtitle: sprints[currentSprintIdx].name,
+      totalText: pluralize(totalThisSprint, entityPluralizations.commits),
+      differenceText: pluralize(
+        totalThisSprint - totalLastSprint,
+        entityPluralizations.fromLastSprint,
+        forceSign,
+      ),
+      categories: categories.map((elem, idx) => ({
+        title: elem,
+        valueText: pluralize(
+          commitSizesDistributionPerSprint[currentSprintIdx][idx],
+          entityPluralizations.commits,
+        ),
+        differenceText: pluralize(
+          commitSizesDistributionPerSprint[currentSprintIdx][idx]
+          - commitSizesDistributionPerSprint[currentSprintIdx - 1][idx],
+          entityPluralizations.commits,
+          forceSign,
+        ),
+      }))
+    }
+  }
+
+  const myOutput = prepareData(input, { sprintId: sprints[currentSprintIdx].id })[indices.diagram];
   expect(myOutput).toEqual(expectedOutput);
 });
 
