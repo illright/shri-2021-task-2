@@ -8,6 +8,13 @@ const dayMs = 24 * hourMs;
 const sprintDurationMs = sprintDurationDays * dayMs;
 
 /**
+ * Move the date to a monday.
+ */
+function nudgeToMonday(date: Date) {
+  date.setDate(date.getDate() - date.getDay() + 1);
+}
+
+/**
  * Generate a list of `amount` users.
  * Their IDs will be numbered consecutively from 0.
  *
@@ -41,6 +48,7 @@ export function users(amount: number) {
 export function sprints(amount: number, idOffset: number) {
   const result: Sprint[] = [];
   const startDate = new Date(randInt(2000, 2050), randInt(0, 11), randInt(1, 28));
+  nudgeToMonday(startDate);
 
   for (let i = idOffset; i < idOffset + amount; ++i) {
     result.push({
