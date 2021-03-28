@@ -3,6 +3,7 @@ import randInt from '../src/utils/rand-int';
 import * as generate from './entity-generators';
 import { prepareData } from '../src/main';
 import { pluralize, entityPluralizations } from '../src/utils/pluralization';
+import sum from '../src/utils/sum';
 import type { Entity, User } from '../src/entities';
 import type {
   ActivitySlide,
@@ -79,7 +80,7 @@ test('The Leaders and Chart slides are constructed correctly', () => {
       users: expectedLeaders.data.users,
       values: commitDistributionPerUser.map((sprint, idx) => ({
         title: sprints[idx].id.toString(),
-        value: sprint.reduce((acc, elem) => acc + elem, 0),
+        value: sum(sprint),
         hint: sprints[idx].name,
         ...(idx === currentSprintIdx ? { active: true } : {}),
       })),
@@ -94,12 +95,12 @@ test('The Leaders and Chart slides are constructed correctly', () => {
 });
 
 test('The Vote slide is constructed correctly', () => {
-    const userAmount = 5;
-    const sprintAmount = 3;
-    const currentSprintIdx = sprintAmount - 1;
-    const likesDistributionPerUser = new Array(sprintAmount).fill(null).map(
-      () => new Array(userAmount).fill(null).map(() => randInt(0, 25))
-    );
+  const userAmount = 5;
+  const sprintAmount = 3;
+  const currentSprintIdx = sprintAmount - 1;
+  const likesDistributionPerUser = new Array(sprintAmount).fill(null).map(
+    () => new Array(userAmount).fill(null).map(() => randInt(0, 25))
+  );
 
   const users = generate.users(userAmount);
   const sprints = generate.sprints(sprintAmount, randInt(0, 1000));
