@@ -96,7 +96,6 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   }
 
   const commitsPerUserThisSprint = new Map<UserId, number>();
-  users.forEach(user => commitsPerUserThisSprint.set(user.id, 0));
   const commitsPerSprint = new Map<SprintId, number>();
   const commitSizesThisSprint = new CommitSizes();
   const commitSizesLastSprint = new CommitSizes();
@@ -106,7 +105,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   for (const commit of commits) {
     if (withinSprint(commit.timestamp, currentSprint)) {
       const authorId = getID<User>(commit.author);
-      commitsPerUserThisSprint.set(authorId, commitsPerUserThisSprint.get(authorId) + 1);
+      commitsPerUserThisSprint.set(authorId, (commitsPerUserThisSprint.get(authorId) ?? 0) + 1);
       commitSizesThisSprint.countInCommit(commit, summaries);
 
       const commitDate = new Date(commit.timestamp);
