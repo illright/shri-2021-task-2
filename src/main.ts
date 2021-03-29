@@ -1,6 +1,7 @@
 import binarySearch from 'binary-search';
 
 import {
+  byMapKeyAsc,
   byMapValueDesc,
   bySprintStartTime,
   relativeToSprint,
@@ -125,7 +126,9 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     }
   }
 
-  const commitLeaderboard = [...commitsPerUserThisSprint.entries()].map(([id, commitCount]) => {
+  const usersRankedByCommits = [...commitsPerUserThisSprint.entries()];
+  usersRankedByCommits.sort((a, b) => byMapValueDesc(a, b) || byMapKeyAsc(a, b));
+  const commitLeaderboard = usersRankedByCommits.map(([id, commitCount]) => {
     const user = users.get(id);
     return {
       id,
