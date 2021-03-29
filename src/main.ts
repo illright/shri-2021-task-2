@@ -6,7 +6,7 @@ import {
   relativeToSprint,
   RelativePosition,
 } from './utils/comparators';
-import getID, { isEntity } from './utils/get-id';
+import getID from './utils/get-id';
 import CommitSizes from './utils/commit-sizes';
 import * as walk from './utils/walkers';
 import {
@@ -95,6 +95,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   }
 
   const commitsPerUserThisSprint = new Map<UserId, number>();
+  users.forEach(user => commitsPerUserThisSprint.set(user.id, 0));
   const commitsPerSprint = new Map<SprintId, number>();
   const commitSizesThisSprint = new CommitSizes();
   const commitSizesLastSprint = new CommitSizes();
@@ -104,7 +105,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
   for (const commit of commits) {
     if (withinSprint(commit.timestamp, currentSprint)) {
       const authorId = getID<User>(commit.author);
-      commitsPerUserThisSprint.set(authorId, (commitsPerUserThisSprint.get(authorId) ?? 0) + 1);
+      commitsPerUserThisSprint.set(authorId, commitsPerUserThisSprint.get(authorId) + 1);
       commitSizesThisSprint.countInCommit(commit, summaries);
 
       const commitDate = new Date(commit.timestamp);
@@ -124,9 +125,7 @@ export function prepareData(entities: Entity[], { sprintId }: { sprintId: number
     }
   }
 
-  const usersRankedByCommits = [...commitsPerUserThisSprint.entries()];
-  usersRankedByCommits.sort(byMapValueDesc);
-  const commitLeaderboard = usersRankedByCommits.map(([id, commitCount]) => {
+  const commitLeaderboard = [...commitsPerUserThisSprint.entries()].map(([id, commitCount]) => {
     const user = users.get(id);
     return {
       id,
